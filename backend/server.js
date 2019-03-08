@@ -4,7 +4,6 @@ var http = require("http").Server(app);
 var io = require("socket.io")(http);
 var port = process.env.PORT || 8080;
 
-var clients = [];
 var tabuleiro;
 
 resetState();
@@ -28,13 +27,12 @@ app.get("/", function(req, res) {
 });
 
 io.on("connection", function(client) {
-  //console.log("Conectado:", client);
   client.on("join", function(name) {
     console.log("Joined: " + name);
-    var marcador = clients.length == 0 ? "X" : "O";
+    var marcador = Object.keys(io.sockets.connected).length == 1 ? "X" : "O";
 
-    clients.push({ id: client.id, name, marcador });
-    client.index = clients.length - 1;
+    client.name = name;
+    client.marcador = marcador;
     client.emit("started", marcador);
     client.broadcast.emit("update", tabuleiro);
 
@@ -55,16 +53,15 @@ io.on("connection", function(client) {
     let ref = x + "" + y;
     if (tabuleiro[ref]) return;
 
-    tabuleiro[ref] = clients[client.index].marcador;
+    tabuleiro[ref] = client.marcador;
 
     client.emit("update", tabuleiro);
     client.broadcast.emit("update", tabuleiro);
   });
 
   client.on("disconnect", function() {
-    console.log("Disconnect");
+    console.log("Disconnect", Object.keys(io.sockets.connected).length);
 
-    clients.splice(client.index, 1);
     resetState();
 
     io.emit("update", tabuleiro);
