@@ -12,7 +12,7 @@ export default class jogo extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      marcador: "X",
+      marcador: "",
       tabuleiro: {
         "00": "",
         "01": "",
@@ -47,6 +47,8 @@ export default class jogo extends Component {
       console.log("update:", data);
       me.setState({ tabuleiro: data });
     });
+
+    this.entrarJogo();
   };
 
   entrarJogo = () => {
@@ -69,13 +71,13 @@ export default class jogo extends Component {
     const { tabuleiro } = this.state;
     return (
       <div>
-        <Button
+        {/* <Button
           variant="contained"
           color="default"
           onClick={() => this.entrarJogo()}
         >
           Start
-        </Button>
+        </Button> */}
         Aqui se joga
         <br />
         <ButtonJogo x="0" y="0" onClick={this.onClick} text={tabuleiro["00"]} />

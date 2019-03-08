@@ -4,19 +4,26 @@ var http = require("http").Server(app);
 var io = require("socket.io")(http);
 var port = process.env.PORT || 8080;
 
-var primeiro = true;
+var primeiro;
 var clients = {};
-var tabuleiro = {
-  "00": "",
-  "01": "",
-  "02": "",
-  "10": "",
-  "11": "",
-  "12": "",
-  "20": "",
-  "21": "",
-  "22": ""
-};
+var tabuleiro;
+
+resetState();
+
+function resetState() {
+  primeiro = true;
+  tabuleiro = {
+    "00": "",
+    "01": "",
+    "02": "",
+    "10": "",
+    "11": "",
+    "12": "",
+    "20": "",
+    "21": "",
+    "22": ""
+  };
+}
 
 app.get("/", function(req, res) {
   res.send("server is running");
@@ -43,8 +50,12 @@ io.on("connection", function(client) {
 
   client.on("disconnect", function() {
     console.log("Disconnect");
-    io.emit("update", clients[client.id] + " has left the server.");
+
     delete clients[client.id];
+
+    resetState();
+
+    io.emit("update", tabuleiro);
   });
 });
 
