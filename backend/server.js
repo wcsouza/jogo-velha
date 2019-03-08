@@ -4,14 +4,12 @@ var http = require("http").Server(app);
 var io = require("socket.io")(http);
 var port = process.env.PORT || 8080;
 
-var primeiro;
-var clients = {};
+var clients = [];
 var tabuleiro;
 
 resetState();
 
 function resetState() {
-  primeiro = true;
   tabuleiro = {
     "00": "",
     "01": "",
@@ -33,17 +31,28 @@ io.on("connection", function(client) {
   //console.log("Conectado:", client);
   client.on("join", function(name) {
     console.log("Joined: " + name);
-    var marcador = primeiro ? "X" : "O";
-    if (primeiro) primeiro = false;
+    var marcador = clients.length == 0 ? "X" : "O";
 
-    clients[client.id] = { name, marcador };
+    clients.push({ id: client.id, name, marcador });
+    client.index = clients.length - 1;
     client.emit("started", marcador);
     client.broadcast.emit("update", tabuleiro);
+
+    // mandando mensagem para um cliente pelo id especifico
+    // if (clients.length > 1) {
+    //   clients.forEach(element => {
+    //     console.log("no private", element);
+    //     if (element.id != client.id) {
+    //       var dest = io.sockets.connected[element.id];
+    //       dest.emit("private", "msg privada");
+    //     }
+    //   });
+    // }
   });
 
   client.on("jogada", function({ x, y }) {
     console.log("jogada", x, y);
-    tabuleiro[x + "" + y] = clients[client.id].marcador;
+    tabuleiro[x + "" + y] = clients[client.index].marcador;
     client.emit("update", tabuleiro);
     client.broadcast.emit("update", tabuleiro);
   });
@@ -51,8 +60,7 @@ io.on("connection", function(client) {
   client.on("disconnect", function() {
     console.log("Disconnect");
 
-    delete clients[client.id];
-
+    clients.splice(client.index, 1);
     resetState();
 
     io.emit("update", tabuleiro);

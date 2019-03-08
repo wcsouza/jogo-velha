@@ -48,6 +48,10 @@ export default class jogo extends Component {
       me.setState({ tabuleiro: data });
     });
 
+    // this.socket.on("private", function(data) {
+    //   alert("private: " + data);
+    // });
+
     this.entrarJogo();
   };
 
