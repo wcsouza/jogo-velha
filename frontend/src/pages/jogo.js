@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Button from "@material-ui/core/Button";
 import io from "socket.io-client";
+import Lista from "../components/lista";
 
 const ButtonJogo = ({ x, y, onClick, text }) => (
   <Button variant="contained" color="default" onClick={e => onClick(x, y)}>
@@ -12,87 +13,139 @@ export default class jogo extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      nick: "",
       marcador: "",
-      tabuleiro: {
-        "00": "",
-        "01": "",
-        "02": "",
-        "10": "",
-        "11": "",
-        "12": "",
-        "20": "",
-        "21": "",
-        "22": ""
-      }
+      tabuleiro: null,
+      lista: [],
+      suaVez: false,
+      estaJogando: false
     };
   }
-  socket = io("http://localhost:8080");
+  socket = io("http://localhost:8080", { path: "/socket" });
 
   componentDidMount() {
-    this.conectar();
+    const nick = this.props.location.state.nick;
+    this.setState({ nick }, () => {
+      this.conectar();
+    });
   }
 
   conectar = () => {
     this.socket.connect();
-    console.log(this.socket);
 
     const me = this;
 
-    this.socket.on("started", function(data) {
-      console.log("started:", data);
-      me.setState({ marcador: data });
+    this.socket.on("started", function(marcador, suaVez, tabuleiro) {
+      me.setState({ marcador, suaVez, tabuleiro, estaJogando: true });
     });
 
-    this.socket.on("update", function(data) {
-      console.log("update:", data);
-      me.setState({ tabuleiro: data });
+    this.socket.on("updateList", function(lista) {
+      me.setState({ lista });
     });
 
-    // this.socket.on("private", function(data) {
-    //   alert("private: " + data);
-    // });
+    this.socket.on("update", function(tabuleiro) {
+      me.setState({ tabuleiro, suaVez: !me.state.suaVez });
+    });
 
     this.entrarJogo();
   };
 
   entrarJogo = () => {
-    this.socket.emit("join", "nick");
+    this.socket.emit("join", this.state.nick);
   };
 
   onClick = (x, y) => {
-    console.log("Clicado:", x, y);
-    const { tabuleiro } = this.state;
-    let ref = x + "" + y;
+    const { tabuleiro, estaJogando, suaVez } = this.state;
 
-    if (tabuleiro[ref]) return;
+    if (!estaJogando || !suaVez || tabuleiro[x + "" + y]) return;
 
     this.socket.emit("jogada", { x, y });
   };
 
   render() {
-    const { tabuleiro } = this.state;
+    const { tabuleiro, suaVez, estaJogando } = this.state;
+
+    const renderSuaVez = () => {
+      if (!estaJogando) return <p>Você não está no jogo! Aguarde...</p>;
+
+      if (suaVez) return <p>Sua vez de jogar!</p>;
+
+      return <p>Aguarde seu oponente jogar!</p>;
+    };
+
+    const renderTabuleiro = () => {
+      if (tabuleiro)
+        return (
+          <React.Fragment>
+            <ButtonJogo
+              x="0"
+              y="0"
+              onClick={this.onClick}
+              text={tabuleiro["00"]}
+            />
+            <ButtonJogo
+              x="0"
+              y="1"
+              onClick={this.onClick}
+              text={tabuleiro["01"]}
+            />
+            <ButtonJogo
+              x="0"
+              y="2"
+              onClick={this.onClick}
+              text={tabuleiro["02"]}
+            />
+            <br />
+            <ButtonJogo
+              x="1"
+              y="0"
+              onClick={this.onClick}
+              text={tabuleiro["10"]}
+            />
+            <ButtonJogo
+              x="1"
+              y="1"
+              onClick={this.onClick}
+              text={tabuleiro["11"]}
+            />
+            <ButtonJogo
+              x="1"
+              y="2"
+              onClick={this.onClick}
+              text={tabuleiro["12"]}
+            />
+            <br />
+            <ButtonJogo
+              x="2"
+              y="0"
+              onClick={this.onClick}
+              text={tabuleiro["20"]}
+            />
+            <ButtonJogo
+              x="2"
+              y="1"
+              onClick={this.onClick}
+              text={tabuleiro["21"]}
+            />
+            <ButtonJogo
+              x="2"
+              y="2"
+              onClick={this.onClick}
+              text={tabuleiro["22"]}
+            />
+          </React.Fragment>
+        );
+    };
+
     return (
       <div>
-        {/* <Button
-          variant="contained"
-          color="default"
-          onClick={() => this.entrarJogo()}
-        >
-          Start
-        </Button> */}
-        Aqui se joga
+        Seu nick: {this.state.nick}
         <br />
-        <ButtonJogo x="0" y="0" onClick={this.onClick} text={tabuleiro["00"]} />
-        <ButtonJogo x="0" y="1" onClick={this.onClick} text={tabuleiro["01"]} />
-        <ButtonJogo x="0" y="2" onClick={this.onClick} text={tabuleiro["02"]} />
+        {renderSuaVez()}
         <br />
-        <ButtonJogo x="1" y="0" onClick={this.onClick} text={tabuleiro["10"]} />
-        <ButtonJogo x="1" y="1" onClick={this.onClick} text={tabuleiro["11"]} />
-        <ButtonJogo x="1" y="2" onClick={this.onClick} text={tabuleiro["12"]} />
+        {renderTabuleiro()}
         <br />
-        <ButtonJogo x="2" y="0" onClick={this.onClick} text={tabuleiro["20"]} />
-        <ButtonJogo x="2" y="1" onClick={this.onClick} text={tabuleiro["21"]} />
-        <ButtonJogo x="2" y="2" onClick={this.onClick} text={tabuleiro["22"]} />
+        <Lista itens={this.state.lista} />
       </div>
     );
   }

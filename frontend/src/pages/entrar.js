@@ -1,17 +1,38 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 
 export default class entrar extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { nick: "" };
+  }
+
+  entrarJogo = () => {
+    const { nick } = this.state;
+    if (nick) this.props.history.push("/jogo", { nick });
+  };
+
   render() {
     return (
       <div>
         Entrar
         <br />
-        <Button variant="contained" color="primary">
-          Hello World
+        <input
+          value={this.state.nick}
+          onChange={e => {
+            this.setState({ nick: e.target.value });
+          }}
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            this.entrarJogo();
+          }}
+        >
+          Jogar
         </Button>
-        <Link to="/jogo/">Jogar</Link>
+        {/* <Link to="/jogo/">Jogar</Link> */}
       </div>
     );
   }
