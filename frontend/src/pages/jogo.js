@@ -66,8 +66,6 @@ export default class jogo extends Component {
 
     if (tabuleiro[ref]) return;
 
-    //tabuleiro[ref] = this.state.marcador;
-    //this.setState({ tabuleiro });
     this.socket.emit("jogada", { x, y });
   };
 

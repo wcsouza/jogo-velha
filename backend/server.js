@@ -52,7 +52,11 @@ io.on("connection", function(client) {
 
   client.on("jogada", function({ x, y }) {
     console.log("jogada", x, y);
-    tabuleiro[x + "" + y] = clients[client.index].marcador;
+    let ref = x + "" + y;
+    if (tabuleiro[ref]) return;
+
+    tabuleiro[ref] = clients[client.index].marcador;
+
     client.emit("update", tabuleiro);
     client.broadcast.emit("update", tabuleiro);
   });
