@@ -1,19 +1,22 @@
 import React, { Component } from "react";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
 
 export default class lista extends Component {
   render() {
     return (
       <div>
         Lista:
-        <ul>
+        <List>
           {this.props.itens.map(it => {
             return (
-              <li key={it.name}>
-                {it.name} {it.status}
-              </li>
+              <ListItem key={it.name}>
+                <ListItemText primary={it.name} secondary={it.status} />
+              </ListItem>
             );
           })}
-        </ul>
+        </List>
       </div>
     );
   }

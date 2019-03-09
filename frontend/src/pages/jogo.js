@@ -1,13 +1,8 @@
 import React, { Component } from "react";
-import Button from "@material-ui/core/Button";
+import Grid from "@material-ui/core/Grid";
 import io from "socket.io-client";
 import Lista from "../components/lista";
-
-const ButtonJogo = ({ x, y, onClick, text }) => (
-  <Button variant="contained" color="default" onClick={e => onClick(x, y)}>
-    {text}
-  </Button>
-);
+import Tabuleiro from "../components/tabuleiro";
 
 export default class jogo extends Component {
   constructor(props) {
@@ -75,78 +70,21 @@ export default class jogo extends Component {
 
     const renderTabuleiro = () => {
       if (tabuleiro)
-        return (
-          <React.Fragment>
-            <ButtonJogo
-              x="0"
-              y="0"
-              onClick={this.onClick}
-              text={tabuleiro["00"]}
-            />
-            <ButtonJogo
-              x="0"
-              y="1"
-              onClick={this.onClick}
-              text={tabuleiro["01"]}
-            />
-            <ButtonJogo
-              x="0"
-              y="2"
-              onClick={this.onClick}
-              text={tabuleiro["02"]}
-            />
-            <br />
-            <ButtonJogo
-              x="1"
-              y="0"
-              onClick={this.onClick}
-              text={tabuleiro["10"]}
-            />
-            <ButtonJogo
-              x="1"
-              y="1"
-              onClick={this.onClick}
-              text={tabuleiro["11"]}
-            />
-            <ButtonJogo
-              x="1"
-              y="2"
-              onClick={this.onClick}
-              text={tabuleiro["12"]}
-            />
-            <br />
-            <ButtonJogo
-              x="2"
-              y="0"
-              onClick={this.onClick}
-              text={tabuleiro["20"]}
-            />
-            <ButtonJogo
-              x="2"
-              y="1"
-              onClick={this.onClick}
-              text={tabuleiro["21"]}
-            />
-            <ButtonJogo
-              x="2"
-              y="2"
-              onClick={this.onClick}
-              text={tabuleiro["22"]}
-            />
-          </React.Fragment>
-        );
+        return <Tabuleiro tabuleiro={tabuleiro} onClick={this.onClick} />;
     };
 
     return (
-      <div>
-        Seu nick: {this.state.nick}
-        <br />
-        {renderSuaVez()}
-        <br />
-        {renderTabuleiro()}
-        <br />
-        <Lista itens={this.state.lista} />
-      </div>
+      <Grid container spacing={24}>
+        <Grid item xs={12}>
+          {renderSuaVez()}
+        </Grid>
+        <Grid item xs={9}>
+          {renderTabuleiro()}
+        </Grid>
+        <Grid item xs={3}>
+          <Lista itens={this.state.lista} />
+        </Grid>
+      </Grid>
     );
   }
 }
